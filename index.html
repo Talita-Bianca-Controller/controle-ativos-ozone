@@ -988,16 +988,36 @@ function exportCSV() {
 }
 
 // GOOGLE SHEETS INTEGRATION
-const SHEET_URL = 'https://script.google.com/macros/s/AKfycbztF67pAwjvxm-pc7vOBY0fstHGtBX97F5sJr-DOtAlZtmOKuXQePwpBkbdxQs79jrxzw/exec';
+const SHEET_URL = 'https://script.google.com/macros/s/AKfycbz2pVGTw8ZXurFwILfZgRbmIgOnu1YZ-7Z48yUANGiMNVIOmEgqVpALcVpAYvRfUYq_yQ/exec';
 
 async function enviarParaSheets(record) {
   try {
+    // Separa foto dos dados de texto para não sobrecarregar a requisição
+    const { fotosBase64, ...dadosSemFoto } = record;
+    
+    // 1. Envia dados de texto primeiro
     await fetch(SHEET_URL, {
       method: 'POST',
       mode: 'no-cors',
       headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify(record)
+      body: JSON.stringify({ ...dadosSemFoto, fotosBase64: [] })
     });
+
+    // 2. Se tiver foto, envia separadamente com delay
+    if (fotosBase64 && fotosBase64.length > 0) {
+      await new Promise(r => setTimeout(r, 2000));
+      await fetch(SHEET_URL, {
+        method: 'POST',
+        mode: 'no-cors',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ 
+          ...dadosSemFoto, 
+          fotosBase64: [fotosBase64[0]], // envia só a primeira foto
+          apenasAtualFoto: true // flag para o script saber que é só a foto
+        })
+      });
+    }
+
     return true;
   } catch (err) {
     console.error('Erro ao enviar:', err);
