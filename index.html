@@ -901,6 +901,7 @@ async function saveRecord() {
     fornecedor: document.getElementById('fornecedorSearch').value,
     observacao: document.getElementById('observacao').value,
     fotos: photos.length,
+    fotosBase64: photos.map(p => p.data),
     timestamp: new Date().toLocaleString('pt-BR')
   };
 
@@ -993,7 +994,7 @@ function exportCSV() {
 }
 
 // GOOGLE SHEETS INTEGRATION
-const SHEET_URL = 'https://script.google.com/macros/s/AKfycbxKOZ099dggwYghJSYY6yOD9LxWipShZvwg4d-JUnV8kCx_dzLqbXBa4uLzO2oOljvurw/exec';
+const SHEET_URL = 'https://script.google.com/macros/s/AKfycbzJHL1oZw_N0QKNyvKD8oIQn5TXBGRPGbPLLyG4cZ800qEi90s_GOhBkaHLQeJ2UwrJGw/exec';
 
 async function enviarParaSheets(record) {
   try {
