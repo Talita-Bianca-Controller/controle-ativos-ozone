@@ -988,41 +988,85 @@ function exportCSV() {
 }
 
 // GOOGLE SHEETS INTEGRATION
-const SHEET_URL = 'https://script.google.com/macros/s/AKfycbz2pVGTw8ZXurFwILfZgRbmIgOnu1YZ-7Z48yUANGiMNVIOmEgqVpALcVpAYvRfUYq_yQ/exec';
+const SHEET_URL = 'https://script.google.com/macros/s/AKfycbytzIcWpmgafs8PY0-_C-OvLWlTlf9iyhoD5yJSwF9P3QahFSy8fnxohMCuuDRhxeUHZg/exec';
 
 async function enviarParaSheets(record) {
-  try {
-    // Separa foto dos dados de texto para não sobrecarregar a requisição
-    const { fotosBase64, ...dadosSemFoto } = record;
-    
-    // 1. Envia dados de texto primeiro
-    await fetch(SHEET_URL, {
-      method: 'POST',
-      mode: 'no-cors',
-      headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify({ ...dadosSemFoto, fotosBase64: [] })
-    });
+  return new Promise((resolve) => {
+    try {
+      const { fotosBase64, ...dadosSemFoto } = record;
 
-    // 2. Se tiver foto, envia separadamente com delay
-    if (fotosBase64 && fotosBase64.length > 0) {
-      await new Promise(r => setTimeout(r, 2000));
-      await fetch(SHEET_URL, {
-        method: 'POST',
-        mode: 'no-cors',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ 
-          ...dadosSemFoto, 
-          fotosBase64: [fotosBase64[0]], // envia só a primeira foto
-          apenasAtualFoto: true // flag para o script saber que é só a foto
-        })
-      });
+      // Cria iframe oculto para receber a resposta sem redirecionar
+      const iframeName = 'hidden_iframe_' + Date.now();
+      const iframe = document.createElement('iframe');
+      iframe.name = iframeName;
+      iframe.style.display = 'none';
+      document.body.appendChild(iframe);
+
+      // Cria form oculto
+      const form = document.createElement('form');
+      form.method = 'POST';
+      form.action = SHEET_URL;
+      form.target = iframeName;
+      form.style.display = 'none';
+
+      // Adiciona os dados como campo JSON
+      const input = document.createElement('input');
+      input.type = 'hidden';
+      input.name = 'dados';
+      input.value = JSON.stringify({ ...dadosSemFoto, fotosBase64: [] });
+      form.appendChild(input);
+
+      document.body.appendChild(form);
+      form.submit();
+
+      // Limpa após envio
+      setTimeout(() => {
+        document.body.removeChild(form);
+        document.body.removeChild(iframe);
+
+        // Envia foto separadamente se existir
+        if (fotosBase64 && fotosBase64.length > 0) {
+          enviarFoto(dadosSemFoto, fotosBase64[0]);
+        }
+
+        resolve(true);
+      }, 3000);
+
+    } catch (err) {
+      console.error('Erro ao enviar:', err);
+      resolve(false);
     }
+  });
+}
 
-    return true;
-  } catch (err) {
-    console.error('Erro ao enviar:', err);
-    return false;
-  }
+function enviarFoto(dadosSemFoto, fotoBase64) {
+  setTimeout(() => {
+    const iframeName = 'iframe_foto_' + Date.now();
+    const iframe = document.createElement('iframe');
+    iframe.name = iframeName;
+    iframe.style.display = 'none';
+    document.body.appendChild(iframe);
+
+    const form = document.createElement('form');
+    form.method = 'POST';
+    form.action = SHEET_URL;
+    form.target = iframeName;
+    form.style.display = 'none';
+
+    const input = document.createElement('input');
+    input.type = 'hidden';
+    input.name = 'dados';
+    input.value = JSON.stringify({ ...dadosSemFoto, fotosBase64: [fotoBase64], apenasAtualFoto: true });
+    form.appendChild(input);
+
+    document.body.appendChild(form);
+    form.submit();
+
+    setTimeout(() => {
+      document.body.removeChild(form);
+      document.body.removeChild(iframe);
+    }, 5000);
+  }, 3000);
 }
 
 // TOAST
