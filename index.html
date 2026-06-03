@@ -607,7 +607,7 @@
       </div>
     </div>
 
-    <div class="field-group three" style="margin-bottom:16px">
+    <div class="field-group" style="margin-bottom:16px">
       <div class="field">
         <label>Preço de Custo (R$)</label>
         <input type="text" id="preco" placeholder="0,00" oninput="maskMoney(this)">
@@ -615,10 +615,6 @@
       <div class="field">
         <label>NF Entrada</label>
         <input type="text" id="nf1" placeholder="Nº da nota fiscal">
-      </div>
-      <div class="field">
-        <label>NF Entrada 2</label>
-        <input type="text" id="nf2" placeholder="Opcional">
       </div>
     </div>
 
@@ -897,7 +893,6 @@ async function saveRecord() {
     funcao: document.getElementById('funcao').value,
     preco: document.getElementById('preco').value,
     nf1: document.getElementById('nf1').value,
-    nf2: document.getElementById('nf2').value,
     fornecedor: document.getElementById('fornecedorSearch').value,
     observacao: document.getElementById('observacao').value,
     fotos: photos.length,
@@ -927,7 +922,6 @@ function clearFields() {
   document.getElementById('funcao').value = '';
   document.getElementById('preco').value = '';
   document.getElementById('nf1').value = '';
-  document.getElementById('nf2').value = '';
   document.getElementById('fornecedorSearch').value = '';
   document.getElementById('observacao').value = '';
   photos = [];
